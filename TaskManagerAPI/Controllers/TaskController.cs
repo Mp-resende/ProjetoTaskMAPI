@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
+using TaskManagerAPI.Services;
 
 namespace TaskManagerAPI.Controllers
 {
@@ -10,12 +11,15 @@ namespace TaskManagerAPI.Controllers
     [Route("api/[controller]")]
     public class TaskController : ControllerBase
     {
+        private readonly ITaskService _service;
+        public TaskController(ITaskService service) => _service = service;
+
         [HttpGet]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public IActionResult GetAllTasks()
+        public async Task<IActionResult> GetAllTasks()
         {
-            // Placeholder implementation
-            return Ok();
+            var tasks = await _service.GetAllTasksAsync();
+            return Ok(tasks);
         }
     }
 }
