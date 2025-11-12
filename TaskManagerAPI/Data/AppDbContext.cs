@@ -1,4 +1,6 @@
 using Microsoft.EntityFrameworkCore;
+using System;
+
 
 namespace TaskManagerAPI.Data;
 
@@ -15,9 +17,9 @@ public class AppDbContext : DbContext
         modelBuilder.Entity<Models.TaskEntity>().ToTable("tasks");
 
         modelBuilder.Entity<Models.TaskEntity>()
-      .Property(e => e.Status)
-      .HasConversion<string>()
-      .HasDefaultValue(Models.TaskStatus.Pending)
-      .IsRequired();
+            .Property(e => e.Status)
+            .HasConversion<string>()
+            .HasDefaultValue(Models.TaskStatus.Pending)
+            .IsRequired();
     }
 }
