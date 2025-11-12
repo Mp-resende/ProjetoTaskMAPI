@@ -17,18 +17,28 @@ namespace TaskManagerAPI.Controllers
 
         [HttpGet]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public async Task<IActionResult> GetAllTasks()
+        public async Task<IActionResult> GetAllTasks([FromQuery] int pageNumber = 1, int pageSize = 10, TaskStatus? status = null, string? assignedTo = null,DateOnly? dueBefore = null)
         {
-            var tasks = await _service.GetAllTasksAsync();
-            return Ok(tasks);
+            await _service.GetAllTasksAsync(pageNumber, pageSize, status, assignedTo, dueBefore);
+            return Ok();
+        }
+
+        [HttpGet("{id:int}", Name = "GetTaskById")]
+        [ProducesResponseType(typeof(TaskReadDto), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<IActionResult> GetTaskById(int id)
+        {
+            var task = await _service.GetTaskByIdAsync(id);
+            if (task is null) return NotFound();
+            return Ok(task);
         }
 
         [HttpPost]
-        [ProducesResponseType(StatusCodes.Status201Created)]
+        [ProducesResponseType(typeof(TaskReadDto), StatusCodes.Status201Created)]
         public async Task<IActionResult> CreateTask([FromBody] TaskCreateDto task)
         {
             var taskCreated = await _service.CreateTaskAsync(task);
-            return (IActionResult)taskCreated;
+            return CreatedAtRoute("GetTaskById", new{id = taskCreated.Id },taskCreated);
         }
 
         [HttpDelete("{id:int}")]

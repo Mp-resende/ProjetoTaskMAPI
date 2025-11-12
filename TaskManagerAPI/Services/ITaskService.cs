@@ -8,7 +8,7 @@ namespace TaskManagerAPI.Services
 {
     public interface ITaskService
     {
-        Task<List<Models.TaskEntity>> GetAllTasksAsync();
+        Task<List<TaskReadDto>> GetAllTasksAsync(int pageNumber = 1, int pageSize = 10, Models.TaskStatus? status = null, string? assignedTo = null, DateOnly? dueBefore = null);
         Task<TaskReadDto> CreateTaskAsync(TaskCreateDto taskCreateDto);
         Task<TaskReadDto?> GetTaskByIdAsync(int id);
         Task<TaskReadDto?> UpdateTaskAsync(int id, taskUpdateDto taskUpdateDto);
