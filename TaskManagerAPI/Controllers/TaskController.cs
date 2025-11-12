@@ -5,11 +5,12 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using TaskManagerAPI.Models.Dto;
 using TaskManagerAPI.Services;
+using TaskManagerAPI.Models;
 
 namespace TaskManagerAPI.Controllers
 {
     [ApiController]
-    [Route("api/[controller]")]
+    [Route("api/tasks")] // Rota corrigida que eu sugeri antes
     public class TaskController : ControllerBase
     {
         private readonly ITaskService _service;
@@ -17,11 +18,15 @@ namespace TaskManagerAPI.Controllers
 
         [HttpGet]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public async Task<IActionResult> GetAllTasks([FromQuery] int pageNumber = 1, int pageSize = 10, TaskStatus? status = null, string? assignedTo = null,DateOnly? dueBefore = null)
+        // CORRIGIDO: Usando Models.TaskStatus?
+        public async Task<IActionResult> GetAllTasks([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10, [FromQuery] Models.TaskStatus? status = null, [FromQuery] string? assignedTo = null, [FromQuery] DateOnly? dueBefore = null)
         {
-            await _service.GetAllTasksAsync(pageNumber, pageSize, status, assignedTo, dueBefore);
-            return Ok();
+            // Retorne a variável 'tasks'
+            var tasks = await _service.GetAllTasksAsync(pageNumber, pageSize, status, assignedTo, dueBefore);
+            return Ok(tasks);
         }
+
+        // ... resto do arquivo sem alterações ...
 
         [HttpGet("{id:int}", Name = "GetTaskById")]
         [ProducesResponseType(typeof(TaskReadDto), StatusCodes.Status200OK)]
@@ -52,7 +57,7 @@ namespace TaskManagerAPI.Controllers
         }
 
 
-        [HttpPut("{id}")]
+        [HttpPut("{id:int}")] // Adicionado :int
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> UpdateTask(int id, [FromBody] taskUpdateDto task)

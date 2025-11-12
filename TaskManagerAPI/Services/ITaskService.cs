@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using TaskManagerAPI.Models.Dto;
+using TaskManagerAPI.Models;
 
 namespace TaskManagerAPI.Services
 {

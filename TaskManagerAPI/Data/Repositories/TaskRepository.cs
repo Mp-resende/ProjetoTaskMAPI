@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore; // Necessário para .AsQueryable(), .Where(), etc.
 using TaskManagerAPI.Models;
 
 namespace TaskManagerAPI.Data.Repositories
@@ -11,9 +11,39 @@ namespace TaskManagerAPI.Data.Repositories
     {
         private readonly AppDbContext _db;
         public TaskRepository(AppDbContext db) => _db = db;
-        public async Task<List<TaskEntity>> GetAllTasksAsync()
+
+        // CORRIGIDO: Implementação do método com filtros e paginação
+        public async Task<List<TaskEntity>> GetAllTasksAsync(int pageNumber, int pageSize, Models.TaskStatus? status, string? assignedTo, DateOnly? dueBefore)
         {
-            var tasks = await _db.Tasks.ToListAsync();
+            // Começamos com um IQueryable para construir a consulta
+            IQueryable<TaskEntity> query = _db.Tasks.AsQueryable();
+
+            // 1. Aplicar Filtros (requisito funcional)
+            if (status.HasValue)
+            {
+                query = query.Where(t => t.Status == status.Value);
+            }
+
+            if (!string.IsNullOrWhiteSpace(assignedTo))
+            {
+                // Usando EF.Functions.ILike para busca case-insensitive (específico do PostgreSQL)
+                query = query.Where(t => t.AssignedTo != null && 
+                                         EF.Functions.ILike(t.AssignedTo, $"%{assignedTo}%"));
+            }
+
+            if (dueBefore.HasValue)
+            {
+                // Filtra por data limite ATÉ (inclusive) o dia especificado
+                query = query.Where(t => t.DueDate.HasValue && t.DueDate.Value <= dueBefore.Value);
+            }
+
+            // 2. Aplicar Paginação (desafio extra)
+            var tasks = await query
+                .OrderByDescending(t => t.CreatedAt) // Ordenar para paginação consistente
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
             return tasks;
         }
 
